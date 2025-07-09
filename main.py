@@ -170,12 +170,13 @@ class WebCrawlerGUI:
                     
                     if 'text/html' in content_type:
                         soup = BeautifulSoup(response.content, 'html.parser')
-                        for link in soup.find_all(['a', 'link', 'script', 'img']):
-                            href = link.get('href') or link.get('src')
+                        for tag in soup.find_all(['a', 'link', 'script', 'img', 'iframe', 'video', 'source']):
+                            href = tag.get('href') or tag.get('src')
                             if href:
                                 full_url = urljoin(current_url, href)
-                                if self.same_domain(full_url, self.base_url) and full_url not in visited:
-                                    to_visit.append(full_url)
+                                normalized_url = self.strip_fragment(full_url)
+                                if self.same_domain(normalized_url, self.base_url) and normalized_url not in visited:
+                                    to_visit.append(normalized_url)
                                     
                 except requests.RequestException as e:
                     self.root.after(0, self.add_to_tree, current_url, f"Error: {str(e)}", 0)
@@ -192,6 +193,11 @@ class WebCrawlerGUI:
             return urlparse(url1).netloc == urlparse(url2).netloc
         except:
             return False
+        
+    def strip_fragment(self, url):
+        parsed = urlparse(url)
+        return parsed._replace(fragment='').geturl()
+        
             
     def add_to_tree(self, url, content_type, size):
         file_type = "Other"
@@ -310,8 +316,8 @@ class WebCrawlerGUI:
         progress_window = tk.Toplevel(self.root)
         progress_window.withdraw()  # Hide window until it's positioned
         progress_window.title("Download") # Set consistent title
-        progress_window.geometry("500x220")
-        progress_window.resizable(False, False)
+        progress_window.geometry("500x250")
+        progress_window.resizable(False, True)
         progress_window.transient(self.root)
         progress_window.grab_set()
 
