@@ -82,7 +82,7 @@ class WebCrawlerGUI:
         self.tree.heading('Size', text='Size', command=lambda: self.sort_by_column('Size'))
         
         self.tree.column('#0', width=600, stretch=tk.YES)
-        self.tree.column('Type', width=60, stretch=tk.NO, anchor=tk.W) #-------------------------
+        self.tree.column('Type', width=60, stretch=tk.NO, anchor=tk.W)
         self.tree.column('Size', width=70, stretch=tk.NO, anchor=tk.CENTER)
         
         # Scrollbars
@@ -321,23 +321,32 @@ class WebCrawlerGUI:
         progress_window.transient(self.root)
         progress_window.grab_set()
 
+        # Main container frame
         main_frame = ttk.Frame(progress_window, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(main_frame, text="Overall Progress:").pack(anchor=tk.W)
+        # Content frame for progress bars and status (expandable)
+        content_frame = ttk.Frame(main_frame)
+        content_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(content_frame, text="Overall Progress:").pack(anchor=tk.W)
         overall_progress_var = tk.DoubleVar()
-        overall_progress_bar = ttk.Progressbar(main_frame, variable=overall_progress_var, maximum=len(url_list), length=400)
+        overall_progress_bar = ttk.Progressbar(content_frame, variable=overall_progress_var, maximum=len(url_list), length=400)
         overall_progress_bar.pack(fill=tk.X, pady=(0, 10))
 
-        current_file_label = ttk.Label(main_frame, text="Current File:", wraplength=450)
+        current_file_label = ttk.Label(content_frame, text="Current File:", wraplength=450)
         current_file_label.pack(anchor=tk.W, pady=(10, 0))
         
         current_progress_var = tk.DoubleVar()
-        current_progress_bar = ttk.Progressbar(main_frame, variable=current_progress_var, maximum=100, length=400)
+        current_progress_bar = ttk.Progressbar(content_frame, variable=current_progress_var, maximum=100, length=400)
         current_progress_bar.pack(fill=tk.X, pady=(0, 5))
 
-        current_status_label = ttk.Label(main_frame, text="Waiting to start...")
+        current_status_label = ttk.Label(content_frame, text="Waiting to start...", wraplength=450)
         current_status_label.pack(anchor=tk.W)
+
+        # Button frame at the bottom (non-expandable)
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=(15, 0))
 
         self.download_cancelled = False
         def cancel_action():
@@ -345,8 +354,8 @@ class WebCrawlerGUI:
                 self.download_cancelled = True
                 cancel_button.config(text="Cancelling...", state=tk.DISABLED)
 
-        cancel_button = ttk.Button(main_frame, text="Cancel", command=cancel_action)
-        cancel_button.pack(pady=(15, 0))
+        cancel_button = ttk.Button(button_frame, text="Cancel", command=cancel_action)
+        cancel_button.pack()
         
         progress_window.update_idletasks()
         main_win_x = self.root.winfo_x()
